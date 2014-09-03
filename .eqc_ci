@@ -1,3 +1,4 @@
-{build, "cd lib/ssh/test/property_test; erl -make"}.
+{build, "cd lib/ssh/test; erl -make ; cd property_test ; erl -make"}.
 {test_path, "lib/ssh/test/property_test"}.
 {test_root, "lib/ssh/test/property_test"}.
+{deps,  ".."}.
