@@ -101,9 +101,9 @@ prop_seq(CT_Config) ->
 
 
 do_prop_seq(DataDir) ->
-    ?FORALL(Cmds,commands(?MODULE, #state{data_dir=DataDir}),
+    ?FORALL(Cmds,commands(?MODULE),
 	    begin
-		{H,Sf,Result} = run_commands(?MODULE,Cmds),
+		{H,Sf,Result} = run_commands(?MODULE,Cmds,[{data_dir,DataDir}]),
 		present_result(?MODULE, Cmds, {H,Sf,Result}, Result==ok)
 	    end).
 
@@ -119,9 +119,9 @@ prop_parallel(CT_Config) ->
     do_prop_parallel(full_path(?SSH_DIR, CT_Config)).
 
 do_prop_parallel(DataDir) ->
-    ?FORALL(Cmds,parallel_commands(?MODULE, #state{data_dir=DataDir}),
+    ?FORALL(Cmds,parallel_commands(?MODULE),
 	    begin
-		{H,Sf,Result} = run_parallel_commands(?MODULE,Cmds),
+		{H,Sf,Result} = run_parallel_commands(?MODULE,Cmds,[{data_dir,DataDir}]),
 		present_result(?MODULE, Cmds, {H,Sf,Result}, Result==ok)
 	    end).
 
@@ -135,10 +135,10 @@ prop_parallel_multi(CT_Config) ->
 
 do_prop_parallel_multi(DataDir) ->
     ?FORALL(Repetitions,?SHRINK(1,[10]),
-	    ?FORALL(Cmds,parallel_commands(?MODULE, #state{data_dir=DataDir}),
+	    ?FORALL(Cmds,parallel_commands(?MODULE),
 		    ?ALWAYS(Repetitions,
 			    begin
-				{H,Sf,Result} = run_parallel_commands(?MODULE,Cmds),
+				{H,Sf,Result} = run_parallel_commands(?MODULE,Cmds,[{data_dir,DataDir}]),
 				present_result(?MODULE, Cmds, {H,Sf,Result}, Result==ok)
 			    end))).
 
@@ -147,14 +147,13 @@ do_prop_parallel_multi(DataDir) ->
 
 %%% called when using commands/1
 initial_state() -> 
-    S = initial_state(#state{}),
-    S#state{initialized=true}.
+  #state{}.
 
 %%% called when using commands/2
-initial_state(S) ->
+initial_state(DataDir) ->
     application:stop(ssh),
     ssh:start(),
-    setup_rsa(S#state.data_dir).
+    setup_rsa(DataDir).
 
 %%%----------------
 weight(S, ssh_send) -> 5*length([C || C<-S#state.channels, has_subsyst(C)]);
@@ -168,7 +167,7 @@ weight(_S, _) -> 1.
 
 initial_state_pre(S) -> not S#state.initialized.
 
-initial_state_args(S) -> [S].
+initial_state_args(S) -> [{var,data_dir}].
 
 initial_state_next(S, _, _) -> S#state{initialized=true}.
 
@@ -179,7 +178,7 @@ initial_state_next(S, _, _) -> S#state{initialized=true}.
 ssh_server_pre(S) -> S#state.initialized andalso 
 			 length(S#state.servers) < ?MAX_NUM_SERVERS.
 
-ssh_server_args(S) -> [?SERVER_ADDRESS, S#state.data_dir, ?SERVER_EXTRA_OPTIONS]. 
+ssh_server_args(S) -> [?SERVER_ADDRESS, {var,data_dir}, ?SERVER_EXTRA_OPTIONS]. 
 
 ssh_server({IP,Port}, DataDir, ExtraOptions) ->
     ok(ssh:daemon(IP, Port, 
@@ -237,7 +236,7 @@ do(Pid, Fun, Timeout) when is_function(Fun,0) ->
 
 ssh_open_connection_pre(S) -> S#state.servers /= [].
     
-ssh_open_connection_args(S) -> [oneof(S#state.servers), S#state.data_dir].
+ssh_open_connection_args(S) -> [oneof(S#state.servers), {var,data_dir}].
     
 ssh_open_connection(#srvr{address=Ip, port=Port}, DataDir) ->
     ok(ssh:connect(ensure_string(Ip), Port, 
@@ -600,3 +599,4 @@ erase_dir(Dir) ->
     file:del_dir(Dir).
 
 -endif.
+
