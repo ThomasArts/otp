@@ -185,21 +185,23 @@ ssh_server_pre(S) -> S#state.initialized andalso
 ssh_server_args(_) -> [?SERVER_ADDRESS, {var,data_dir}, ?SERVER_EXTRA_OPTIONS]. 
 
 ssh_server({IP,Port}, DataDir, ExtraOptions) ->
-    ok(ssh:daemon(IP, Port, 
-		  [
-		   {system_dir, system_dir(DataDir)},
-		   {user_dir, user_dir(DataDir)},
-		   {subsystems, [{SS, {ssh_eqc_subsys, [SS]}} || SS <- ?SUBSYSTEMS]}
-		   | ExtraOptions
-		  ])).
+    {Port, ok(ssh:daemon(IP, Port,
+                  [
+                   {system_dir, system_dir(DataDir)},
+                   {user_dir, user_dir(DataDir)},
+                   {subsystems, [{SS, {ssh_eqc_subsys, [SS]}} || SS <- ?SUBSYSTEMS]}
+                   | ExtraOptions
+                  ]))}.
 
-ssh_server_post(_S, _Args, Result) -> is_ok(Result).
+ssh_server_post(_S, _Args, {_Port, Result}) -> is_ok(Result).
 
-ssh_server_next(S, Result, [{IP,Port},_,_]) ->
+ssh_server_next(S, PortResult, [{IP,_Port},_,_]) ->
+    Port = {call, erlang, element, [1, PortResult]},
+    Result = {call, erlang, element, [2, PortResult]},
     S#state{servers=[#srvr{ref = Result,
-			   address = IP,
-			   port = Port}
-		     | S#state.servers]}.
+                           address = IP,
+                           port = Port}
+                     | S#state.servers]}.
 
 %%%----------------
 %%% Start a new client
