@@ -1,1 +1,1 @@
-{"*",[{parse_transform,eqc_cover}]}.
+{'*',[{parse_transform,eqc_cover}]}.
