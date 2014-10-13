@@ -6,6 +6,7 @@
 -define(TEST_MODULE, myerlangprog).
 
 prop_cover() ->
+  eqc:numtests(10,
   ?FORALL(Code, eqc_erlang_program:module(?TEST_MODULE,[{maps,true},{macros,true}]),
   begin
     File = lists:concat([?TEST_MODULE, ".erl"]),
@@ -14,4 +15,4 @@ prop_cover() ->
     Expected = {ok, ?TEST_MODULE},
     ?WHENFAIL(eqc:format("~s\n", [Code]),
           equals(Res, Expected))
-  end).
+  end)).
