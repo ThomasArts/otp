@@ -110,6 +110,10 @@ IDL-GENERATED
 # Used by applications that run javadoc (e.g. ic).
 JAVADOC-GENERATED
 
+# QuickCheck
+.eqc-info
+current_counterexample.eqc
+
 # Anchored from $ERL_TOP
 /bin
 /config.log
