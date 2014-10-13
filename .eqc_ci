@@ -1,4 +1,4 @@
-{build, "cd lib/ssh/test; erlc +'{parse_transform,eqc_cover}' ssh_test_lib.erl ; cd property_test ; erl -make; cd ../../../lib/tools/; erlc +'{parse_transform,eqc_cover}' test/cover_eqc.erl "}.
+{build, "cd lib/ssh/test; erlc +'{parse_transform,eqc_cover}' ssh_test_lib.erl ; cd property_test ; erl -make; cd ../../../../lib/tools/test; erlc +'{parse_transform,eqc_cover}' cover_eqc.erl "}.
 {test_path, [ "lib/ssh/test/property_test", "lib/tools/test" ]}.
 {test_root, "lib/ssh/test/property_test"}.
 {deps,  [ "lib/ssh/test", "lib/tools/test" ]}.
